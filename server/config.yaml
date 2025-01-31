@@ -1,0 +1,88 @@
+# config.yaml
+
+# Model Method
+model_method: openai
+
+# milvus config
+milvus:
+  url: http://10.18.50.117:19530
+
+# http config
+http:
+  #java应用url
+  flow_image: http://192.168.0.68:8087
+  #相似度查询url
+  similarity_search: http://10.18.61.35:8660
+  #图像识别url
+  images_detect: http://10.18.50.117:7013
+  #图像浏览url
+  images_view: http://10.18.50.117:7012
+  #图像保存路径
+  images_path: /data/car-chat-end/docRAG/car-chat/image/
+
+# Model Configurations
+models:
+  openai:
+    temperature: 0
+    max_tokens: 4096
+    presence_penalty: 1.2
+    model: deepseek-chat
+    openai_api_base: https://api.deepseek.com/v1
+    # model: gpt-4o-mini
+    # openai_api_base: https://api.openai-proxy.org/v1
+  ollama:
+    temperature: 0
+    num_predict: 4096
+    repeat_penalty: 1.2
+    model: llama:3.2
+
+# Embedding Model cuda
+embedding:
+  model_name: ../../Embedding/maidalun/bce-embedding-base_v1
+  model_kwargs:
+    device: cpu
+    trust_remote_code: true
+  encode_kwargs:
+    normalize_embeddings: true
+
+# Reranker Model cuda
+reranker:
+  model: ../../Reranker/maidalun1020/bce-reranker-base_v1
+  top_n: 1
+  device: cpu
+
+# Document Loader
+document_loader:
+  loader_kwargs:
+    autodetect_encoding: true
+  show_progress: true
+  use_multithreading: true
+
+# Text Splitter
+text_splitter:
+  chunk_size: 200
+  chunk_overlap: 0
+
+# Retrieval Configuration
+retrieval:
+  search_type: similarity_score_threshold
+  search_kwargs:
+    k: 10
+    score_threshold: 0.8
+
+# Prompt Template
+context_prompts:
+  system_prompt: |
+    "You are a professional question answering assistant. Use the content retrieved below to answer the questions."
+    "If there is an image link in the search results, you must answer the original image link and cannot make any changes to the format of the image link."
+    "Retain the original content and format of the answers."
+    "<content retrieved: {context}>"
+  user_prompt: "{input}"
+
+# mysql config
+mysql:
+  user: root
+  password: Car3210#
+  ip: 192.168.0.67
+  port: 3306
+  database: knowledge-maintain
