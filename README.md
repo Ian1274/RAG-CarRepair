@@ -121,7 +121,7 @@ python fastAPI.py
   author = {汽车维修智能问答系统},
   title = {Car Repair Intelligent QA System},
   year = {2024},
-  url = {https://github.com/Ian1274/car-repair-qa}
+  url = {https://github.com/Ian1274/RAG-CarRepair}
 }
 ```
 
