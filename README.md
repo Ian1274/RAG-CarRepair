@@ -12,8 +12,6 @@
   - [安装LangChain相关包](#2-安装LangChain相关包)
   - [配置数据库](#3-配置数据库)
   - [运行系统](#4-运行系统)
-- [系统架构](#-系统架构)
-- [配置与管理](#-配置与管理)
 - [引用与致谢](#-引用与致谢)
 
 ## 🚗 项目简介
@@ -22,10 +20,14 @@
 
 ## 🆕 更新记录
 
-### **V0.5 更新 - 2025/1/10**
+### **V0.6 更新 - 2025/2/08**
 
-- 添加输入图片的功能，用户可以输入图片进行提问。
-- 此功能接口有待优化。
+- Streamlit构建**Web界面**。
+
+### ~~V0.5~~ ~~更新~~ ~~-~~ ~~2025/1/10~~
+
+- ~~添加输入图片的功能，用户可以输入图片进行提问。~~
+- ~~此功能接口有待优化。~~
 
 ### **V0.4 更新 - 2024/12/28**
 - 完成项目模块化设计，分为 **数据处理模块** 和 **RAG模块**。
@@ -78,7 +80,7 @@ https://github.com/opendatalab/MinerU
 安装所需的`LangChain`及相关库：
 
 ```bash
-pip install langchain fastAPI mysql sqlalchemy python-dotenv pymilvus langchain_openai langchain_huggingface
+pip install -r requirements.txt
 ```
 
 embedding模型选用的是BCEmbedding，因此需要按照以下参考进行langchain的适配：
@@ -87,9 +89,11 @@ embedding模型选用的是BCEmbedding，因此需要按照以下参考进行lan
 https://github.com/netease-youdao/BCEmbedding
 ```
 
+也可以选择Ollama拉取embedding模型使用。
+
 ### 3. 配置数据库
 
-配置一个mysql数据库与一个Milvus向量数据库，得到两者的地址，在config文件中需做相应修改。
+配置一个mysql数据库与一个Milvus向量数据库，也可以选择其他的数据库，但都要得到两者的地址，在config文件中需做相应修改。
 
 ### 4. 运行系统
 
@@ -97,20 +101,10 @@ https://github.com/netease-youdao/BCEmbedding
 
 ```bash
 # 启动问答系统
+cd server
 python fastAPI.py
+streamlit run app.py
 ```
-
-## 📊 系统架构
-
-该系统的架构分为两个主要模块：
-
-1. **数据处理模块**：负责处理和解析文档，更新和维护知识库。
-2. **RAG问答模块**：基于RAG模型实现智能问答功能，通过知识库提供准确的维修方案与答案。
-
-## ⚙️ 配置与管理
-
-- **知识库文档管理**：支持文档的添加、删除和查询，所有文档信息存储在SQL数据库中，确保数据管理的高效性。
-- **模块独立性**：数据处理和RAG模块可以并行运行，提高系统响应速度和稳定性。
 
 ## 📜 引用与致谢
 

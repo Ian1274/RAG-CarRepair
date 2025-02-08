@@ -2,6 +2,7 @@ import re
 import os
 import time
 import uuid
+from shutil import copy2
 import paramiko
 from datetime import datetime
 from tqdm import tqdm  # 用于显示进度条
@@ -10,7 +11,9 @@ from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import MarkdownHeaderTextSplitter
 
 # 配置远程服务器信息
-remote_host = "10.18.50.117:7012"
+remote_host = "127.0.0.1:8011"
+# 配置图片存储的本地目录和 FastAPI 服务器信息
+IMAGE_FOLDER = os.path.join("..", "database", "temp_imgs")  # 兼容不同操作系统
 
 class MdProcessor:
     def __init__(self, md_file_path):
@@ -25,6 +28,7 @@ class MdProcessor:
         
         # 确保输出目录存在
         os.makedirs(self.chunks_dir, exist_ok=True)
+        os.makedirs(IMAGE_FOLDER, exist_ok=True)  # 确保图片保存目录存在
 
     def generate_output_paths(self):
         """
@@ -39,34 +43,30 @@ class MdProcessor:
         self.chunks_dir = os.path.join(base_dir.replace("kbs_md", "kbs_chunks"), file_name)
         self.image_save_dir = os.path.join(base_dir.replace("kbs_md", "kbs_imgs"), file_name)
 
-    def upload_image(self, local_path):
-        return f"http://{remote_host}/{local_path.replace('../', '', 1)}"
-
-    def upload_images_concurrently(self, image_paths):
+    def save_image_locally(self, local_path):
         """
-        并发上传多张图片到远程服务器。
+        将本地图片文件复制到 temp_imgs 目录，并返回新的图片路径。
 
         参数：
-            image_paths (list): 图片本地路径列表。
+            local_path (str): 本地图片路径。
 
         返回值：
-            dict: 本地路径到远程 URL 的映射。
+            str: 新的图片路径（在 temp_imgs 目录下）。
         """
-        url_mapping = {}
+        # 生成独一无二的 ID 作为图片的新文件名
+        unique_id = str(uuid.uuid4())
+        file_extension = os.path.splitext(local_path)[1]  # 获取文件的扩展名
+        new_image_name = f"{unique_id}{file_extension}"
+        new_image_path = os.path.join(IMAGE_FOLDER, new_image_name)
 
-        def upload_task(local_path):
-            url_mapping[local_path] = self.upload_image(local_path)
+        # 复制图片到新的路径
+        copy2(local_path, new_image_path)
 
-        # 设置最大并发数，并使用 tqdm 显示进度条
-        max_workers = 8
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            list(tqdm(executor.map(upload_task, image_paths), total=len(image_paths), desc="Uploading Images"))
-
-        return url_mapping
+        return new_image_name
 
     def process_md_file(self):
         """
-        上传 Markdown 文件中的本地图片到远程服务器，并替换图片地址。
+        将 Markdown 文件中的图片替换为本地生成的新图片路径，并改为 FastAPI 路由格式。
         """
         # 读取 Markdown 文件内容
         with open(self.md_file_path, "r", encoding="utf-8") as md_file:
@@ -79,15 +79,15 @@ class MdProcessor:
         # 筛选存在的本地图片路径
         image_paths = [path for path in matches if os.path.exists(path)]
 
-        # 上传图片并替换地址
-        url_mapping = self.upload_images_concurrently(image_paths)
-        for local_path, remote_url in url_mapping.items():
-            if remote_url:
-                md_content = md_content.replace(local_path, remote_url)
+        # 处理图片并替换路径为 FastAPI 路由样式
+        for local_path in image_paths:
+            new_image_name = self.save_image_locally(local_path)
+            new_image_url = f"http://{remote_host}/image/{new_image_name}"
+            md_content = md_content.replace(local_path, new_image_url)
 
         # 修改图片地址格式为 HTML 格式
-        img2_pattern = r"!\[.*?\]\((http.*?)\)"
-        md_content = re.sub(img2_pattern, r'<img  src="\1"  />', md_content)
+        img2_pattern = r"!\[.*?\]\((.*?)\)"
+        md_content = re.sub(img2_pattern, r'<img src="\1" />', md_content)
 
         # 保存修改后的 Markdown 文件
         base_name, ext = os.path.splitext(os.path.basename(self.md_file_path))
@@ -110,7 +110,7 @@ class MdProcessor:
         documents = loader.load()
 
         # 使用 MarkdownHeaderTextSplitter 进行分块
-        markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=[
+        markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=[ 
             ("#", "Header 1"),
             ("##", "Header 2"),
             ("###", "Header 3"),
@@ -141,12 +141,12 @@ class MdProcessor:
     def run(self):
         """
         执行完整的 Markdown 处理流程：
-        1. 上传图片并替换地址。
+        1. 替换图片路径为 FastAPI 路由格式并保存。
         2. 按照 LangChain 格式分块。
         """
         start_time = time.time()  # 记录开始时间
 
-        # 上传图片并替换 Markdown 文件中的图片地址
+        # 替换图片并保存 Markdown 文件
         updated_md_path, image_count = self.process_md_file()
 
         # 按标题分块处理 Markdown 文件
@@ -158,7 +158,7 @@ class MdProcessor:
 
         # 打印处理结果
         elapsed_time = time.time() - start_time
-        print(f"上传图片数量: {image_count}")
+        print(f"处理图片数量: {image_count}")
         print(f"分块文件数量: {chunk_count}")
         print(f"总耗时: {elapsed_time:.2f} 秒")
 
@@ -167,6 +167,6 @@ class MdProcessor:
 
 if __name__ == "__main__":
     # 示例用法
-    md_file_path = "../database/kbs_md/yyx/pdftest.md"  # 输入 Markdown 文件路径
+    md_file_path = "../database/kbs_md/A0_byd/比亚迪电动车维修手册.md"  # 输入 Markdown 文件路径
     processor = MdProcessor(md_file_path)
     processor.run()

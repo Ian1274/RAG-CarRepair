@@ -4,7 +4,6 @@ from pydantic import BaseModel
 class KnowledgeBaseQueryRequest(BaseModel):
     name: str
     question: str
-    img: str
 
 class KnowledgeBaseVo(BaseModel):
     name: str

@@ -6,19 +6,8 @@ model_method: openai
 # milvus config
 milvus:
   url: http://10.18.50.117:19530
-
-# http config
-http:
-  #java应用url
-  flow_image: http://192.168.0.68:8087
-  #相似度查询url
-  similarity_search: http://10.18.61.35:8660
-  #图像识别url
-  images_detect: http://10.18.50.117:7013
-  #图像浏览url
-  images_view: http://10.18.50.117:7012
-  #图像保存路径
-  images_path: /data/car-chat-end/docRAG/car-chat/image/
+  # url: https://in05-e9b7822ca8ff8bb.serverless.ali-cn-hangzhou.cloud.zilliz.com.cn
+  # token: 7dc031089e6d2095e90ddb01b22837bb68f444658e6efdb726899623178d777b307be7a264fb8014b445786993ce898d7e93e486
 
 # Model Configurations
 models:
@@ -26,10 +15,10 @@ models:
     temperature: 0
     max_tokens: 4096
     presence_penalty: 1.2
-    model: deepseek-chat
-    openai_api_base: https://api.deepseek.com/v1
-    # model: gpt-4o-mini
-    # openai_api_base: https://api.openai-proxy.org/v1
+    # model: deepseek-chat
+    # openai_api_base: https://api.deepseek.com/v1
+    model: gpt-4o-mini
+    openai_api_base: https://api.openai-proxy.org/v1
   ollama:
     temperature: 0
     num_predict: 4096
@@ -40,7 +29,7 @@ models:
 embedding:
   model_name: ../../Embedding/maidalun/bce-embedding-base_v1
   model_kwargs:
-    device: cpu
+    device: cuda
     trust_remote_code: true
   encode_kwargs:
     normalize_embeddings: true
@@ -49,7 +38,7 @@ embedding:
 reranker:
   model: ../../Reranker/maidalun1020/bce-reranker-base_v1
   top_n: 1
-  device: cpu
+  device: cuda
 
 # Document Loader
 document_loader:

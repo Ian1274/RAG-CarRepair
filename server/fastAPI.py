@@ -33,4 +33,4 @@ app.include_router(rag_router)  # 注册 RAG 系统路由
 # 启动应用程序入口点
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("fastAPI:app", host="127.0.0.1", port=7011, reload=True)  # 启动本地开发服务器
+    uvicorn.run("fastAPI:app", host="127.0.0.1", port=8011, reload=True)  # 启动本地开发服务器

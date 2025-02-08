@@ -9,7 +9,6 @@ from utils.api.classes import KnowledgeBaseImageVo
 
 # 定义FastAPI的路由对象，设置前缀和标签
 router = APIRouter(
-    prefix="/chat",
     tags=["Data Preprocessing"],
     responses={404: {"description": "Not found"}},  # 自定义404响应信息
 )
@@ -47,7 +46,8 @@ async def upload_file(
     """
     try:
         # 创建目标目录（如果不存在）
-        target_dir = f"../database/kbs/{name}"  # 知识库文件存储路径
+        # 拼接目标文件路径
+        target_dir = os.path.join("..", "database", "kbs", name)  # 使用 os.path.join 构建路径
         os.makedirs(target_dir, exist_ok=True)
 
         # 拼接目标文件路径
@@ -85,38 +85,4 @@ async def upload_file(
         # 捕获异常并返回错误响应
         raise HTTPException(status_code=500, detail=f"添加文件失败：{e}")
 
-# 上传图片
-@router.post("/upload_image", description="上传图片")
-async def upload_image(
-        file: UploadFile = File(...)
-):
-    try:
-        # 确保目标目录存在
-        target_dir = config['http']['images_path']
-        os.makedirs(target_dir, exist_ok=True)
 
-        # 获取原始文件名和扩展名
-        original_filename = file.filename
-        ext = os.path.splitext(original_filename)[1]
-
-        # 生成新文件名：年月日时分秒加三位随机数
-        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-        random_number = random.randint(0, 999)
-        new_filename = f"{timestamp}_{random_number}{ext}"
-
-        # 确定目标文件路径
-        target_file_path = os.path.join(target_dir, new_filename)
-
-        # 浏览文件路径
-        http = config['http']['images_view']
-        view_file_path = os.path.join(f"{http}/image/", new_filename)
-
-        # 保存上传文件到目标路径
-        with open(target_file_path, "wb") as target_file:
-            shutil.copyfileobj(file.file, target_file)
-
-        imageVo = KnowledgeBaseImageVo(view_url=view_file_path, save_url=target_file_path, info="您好！您想对上传的图像视频，问些什么问题吗？请提问！", extension=ext)
-        # 返回 JSON 数据
-        return imageVo
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"上传图片失败：{e}")

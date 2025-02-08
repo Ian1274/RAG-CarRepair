@@ -86,7 +86,8 @@ class CustomRAG:
                     max_tokens=model_config['max_tokens'],
                     presence_penalty=model_config['presence_penalty'],
                     model=model_config['model'],
-                    openai_api_key=os.getenv('DEEPSEEK_API_KEY'),
+                    # openai_api_key=os.getenv('DEEPSEEK_API_KEY'),
+                    openai_api_key=os.getenv('CLOSEAI_API_KEY'),
                     openai_api_base=model_config['openai_api_base'],
                 )
             elif self.model_method == "ollama":
@@ -150,6 +151,8 @@ class CustomRAG:
                 embedding_function=self.embedding,
                 collection_name=name,
                 connection_args={"uri": milvus_config['url']},
+                # connection_args={"uri": milvus_config['url'],
+                #                  "token": milvus_config['token']},
                 drop_old=drop_old,
                 auto_id=True,
                 enable_dynamic_field=True
@@ -252,6 +255,8 @@ class CustomRAG:
             connections.connect(
                 alias="default",
                 uri=milvus_config['url'].replace('http', 'tcp'),
+                # uri=milvus_config['url'],
+                # token=milvus_config['token']
             )
             collection = Collection(name)
             filter_expression = f"file == '{file_name}'"
@@ -285,6 +290,8 @@ class CustomRAG:
             connections.connect(
                 alias="default",
                 uri=milvus_config['url'].replace('http', 'tcp'),
+                # uri=milvus_config['url'],
+                # token=milvus_config['token']
             )
             if utility.has_collection(name):
                 utility.drop_collection(name)

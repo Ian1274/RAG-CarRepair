@@ -43,8 +43,8 @@ class DataPreprocess:
 
 if __name__ == "__main__":
     # 示例用法
-    name = "A0_yyx_01"  # 知识库名称
-    file_path = "../database/kbs/A0_yyx_01/测试文档.docx"  # 输入 DOCX 文件路径
+    name = "string"  # 知识库名称
+    file_path = "../database/kbs/string/比亚迪维修手册.docx"  # 输入 DOCX 文件路径
 
     # 初始化数据预处理器并运行
     processor = DataPreprocess()
