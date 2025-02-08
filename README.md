@@ -1,5 +1,6 @@
 # 汽车维修智能问答系统
 
+https://github.com/Ian1274/RAG-CarRepair/blob/main/videos/250208.mp4
 
 ## 📑 目录
 
